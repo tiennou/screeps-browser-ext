@@ -4,15 +4,23 @@
 // @match       https://screeps.com/a/*
 // @match       http://*.localhost:*/(*)/#!/*
 // @grant       none
-// @version     1.0
+// @version     1.1
 // @author      -
-// @description Gives super-powers to the Console; history that survives across tabs and view changes, a couple @-variables linked to the viewer's state, etc.
+// @description Gives super-powers to the Console; history that survives across tabs and view changes, a couple #-variables linked to the viewer's state, etc.
 // @run-at      document-ready
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @downloadURL https://gist.github.com/tiennou/405f811e294efbf237725c9b27475898/raw/improved-console-history.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require     https://github.com/Esryok/screeps-browser-ext/raw/master/screeps-browser-core.js
 // ==/UserScript==
+
+/**
+ * Changelog:
+ * - 1.0: initial release
+ * - 1.1:
+ *   - changed the "command" sigil from @ to # since I feel like JS hates the latter more
+ *   - added a `#history [num]` command that will list the command history or execute the given one
+ */
 
 /**
  * @param {number} val
@@ -52,13 +60,48 @@ async function waitFor(condition, pollInterval = 50, timeoutAfter) {
 (() => {
     const HISTORY_STORAGE_KEY = "screeps.console-history";
     const MAX_HISTORY_SIZE = 100;
+    const COMMAND_SIGIL = "#";
     /** The line we're at in the history */
     let historyIdx = -1;
     /** The thing we were currently typing */
     let buffer = "";
 
+    /** List of single-letter "variables" that can be substitued on the fly into a command */
+    const CLI_VARS = {
+        "r": () => `"${getCurrentRoom().roomName}"`,
+        "s": () => `"${getCurrentRoom().shardName}"`,
+        "i": () => `"${selectedObject()._id}"`,
+        "p": () => {
+            const obj = selectedObject();
+            return `${obj.x}, ${obj.y}, "${obj.room}"`
+        },
+    };
+
+    /**
+     * List of extended commands that can be executed
+     * @type {Record<string, (args: string[]) => void>}
+     */
+    const CLI_CMDS = {
+        "history": (args) => {
+            const history = loadHistory();
+            if (!args.length) {
+                appendConsoleMessage(`Command history:\n${history.map((h, idx) => ` - ${idx}: ${h}`).join("\n")}`);
+                return true;
+            }
+            const cmdIdx = Number.parseInt(args[0], 10);
+            if (cmdIdx < 0 || cmdIdx >= history.length) {
+                appendConsoleMessage(`Command index ${cmdIdx} is out of bounds!`, true);
+                return true;
+            }
+            const cmd = history[cmdIdx];
+            appendConsoleMessage(`Executing "${cmd}"`);
+            executeCommand(cmd);
+            return true;
+        }
+    }
+
     function loadHistory() {
-        const history = /** @type {string[] | undefined} */ (JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) ?? "[]"));
+        const history = /** @type {string[]} */ (JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) ?? "[]"));
         console.warn(`History loaded, ${history.length} entries found`);
         window.screepsHistory = history; // TODO: remove, debugging only
         return history;
@@ -82,20 +125,34 @@ async function waitFor(condition, pollInterval = 50, timeoutAfter) {
         return angular.element(document.querySelector('.room.ng-scope')).scope().Room;
     }
 
-    function getGame() {
-        return angular.element(document.querySelector('.game.ng-scope')).scope().Game;
-    }
-
     function selectedObject() {
         const obj = getCurrentRoom().selectedObject;
         if (!obj) throw new Error("No object selected!");
         return obj;
     }
 
-    function getConnection() {
-        const injector = angular.element(document.body).injector();
-        return injector.get("Connection");
-    }
+    const MAX_CONSOLE_MESSAGE_COUNT = 100; // From engine
+
+    /**
+     * @param {string} msg
+     * @param {boolean} [error=false]
+     * @returns
+     */
+    function appendConsoleMessage(msg, error = false) {
+        const console = ScreepsAdapter.Console;
+        const userId = ScreepsAdapter.User._id;
+        console.messages[userId] ??= [];
+        if (!console.enabled) return;
+        console.messages[userId].push({
+            // date: new Date(),
+            // shard: getCurrentRoom().shardName,
+            text: msg.replace(/\n/g, "<br>"),
+            error,
+        });
+        if (console.messages[userId].length > MAX_CONSOLE_MESSAGE_COUNT)
+            console.messages[userId] = console.messages[userId].slice(-MAX_CONSOLE_MESSAGE_COUNT);
+    };
+    window.appendConsoleMessage = appendConsoleMessage;
 
     const Range = ace.require("ace/range").Range;
 
@@ -120,21 +177,11 @@ async function waitFor(condition, pollInterval = 50, timeoutAfter) {
      * @returns
      */
     function substituteVariables(line) {
-        const variables = {
-            "(?<![\w\"'])@r(?![\w\"])": () => `"${getCurrentRoom().roomName}"`,
-            "(?<![\w\"'])@s(?![\w\"])": () => `"${getCurrentRoom().shardName}"`,
-            "(?<![\w\"'])@i(?![\w\"])": () => `"${selectedObject()._id}"`,
-            "(?<![\w\"'])@p(?![\w\"])": () => {
-                const obj = selectedObject();
-                return `${obj.x}, ${obj.y}, "${obj.room}"`
-            },
-        }
-
         let hasError = false;
-        for (const v in variables) {
-            const regex = new RegExp(v, "g")
+        for (const v in CLI_VARS) {
+            const regex = new RegExp([`(?<![\w\"'])${COMMAND_SIGIL}${v}(?![\w\"])`], "g")
             try {
-                let replacement = variables[v]();
+                let replacement = CLI_VARS[v]();
                 line = line.replaceAll(regex, replacement);
             } catch (e) {
                 for (const match of [...line.matchAll(regex)]) {
@@ -150,10 +197,38 @@ async function waitFor(condition, pollInterval = 50, timeoutAfter) {
         return line;
     }
 
+    /**
+     * @param {string} line
+     */
+    function parseCommand(line) {
+        let [cmd, ...args] = line.split(" ");
+        if (!cmd.startsWith(COMMAND_SIGIL)) return false;
+        cmd = cmd.slice(1);
+        if (!CLI_CMDS[cmd]) {
+            appendConsoleMessage(`Unknown console command: ${COMMAND_SIGIL}${cmd}`);
+            return true;
+        }
+        CLI_CMDS[cmd](args);
+        return true;
+    }
+
+    /**
+     * @param {string} line
+     */
     function executeCommand(line) {
         console.warn(`Executing "${line}"`);
-        const game = getGame();
-        getConnection().sendConsoleCommand(line, game.player);
+
+        line = line.replace(/\r?\n/g, " ").trim();
+        if (parseCommand(line)) {
+            return;
+        }
+
+        // Is an actual console command for the game
+        // We substitute first then add to the history so we don't add an erroring command to the history
+        const realLine = substituteVariables(line);
+        appendCommand(line);
+        const userId = ScreepsAdapter.User._id;
+        ScreepsAdapter.Connection.sendConsoleCommand(realLine, userId);
     }
 
     /**
@@ -205,11 +280,7 @@ async function waitFor(condition, pollInterval = 50, timeoutAfter) {
         const _sendCommand = gameConsole.sendCommand;
         gameConsole.sendCommand = function() {
             let line = aceEditor.getValue();
-            line = line.replace(/\r?\n/g, " ").trim();
-            // We substitute first then add to the history so we handle substitution errors first
-            const realLine = substituteVariables(line); // FIXME: this might throw. Could be nice to have a way of reporting the issue
-            appendCommand(line);
-            executeCommand(realLine);
+            executeCommand(line);
         }
 
         const _keydown = gameConsole.keydown;
@@ -275,3 +346,14 @@ async function waitFor(condition, pollInterval = 50, timeoutAfter) {
         });
     });
 })();
+// Add a couple more things to the adapter
+Object.defineProperty(ScreepsAdapter, "Console", {
+    get: function() {
+        delete this.Console;
+        Object.defineProperty(this, "Console", {
+            value: angular.element(document.body).injector().get('Console')
+        });
+        return this.Console;
+    },
+    configurable: true
+});
