@@ -196,6 +196,72 @@
         });
     };
 
+    let currentRoomScope = null;
+    let unwatchSelectedObject = null;
+    async function watchSelectedObject(callback) {
+        // We need a room
+        await waitFor(() => angular.element(document.querySelector(".room.ng-scope")).scope())
+
+        const scope = angular.element(document.querySelector(".room.ng-scope")).scope();
+        if (scope && scope !== currentRoomScope) {
+            // If we had an old watcher, remove it.
+            if (unwatchSelectedObject) {
+                unwatchSelectedObject();
+                unwatchSelectedObject = null;
+            }
+
+            // Attach the watcher
+            unwatchSelectedObject = scope.$watch(
+                () => scope.Room?.selectedObject,
+                (newVal, oldVal) => {
+                    if (newVal !== oldVal) {
+                        callback(newVal, oldVal);
+                    }
+                }
+            );
+
+            currentRoomScope = scope;
+        }
+
+        return unwatchSelectedObject;
+    }
+
+    function notifySelectionWatchers(object) {
+        const rootScope = angular.element(document.body).scope();
+        for (const callback of rootScope.objectSelectionCallbacks) {
+            callback({ object });
+        }
+    }
+
+    let watch;
+
+    /**
+     * Execute a callback when the selected object changes in a room.
+     * @param {({ object: any})} callback
+     */
+    ScreepsAdapter.onSelectionChange = function(callback) {
+        waitForAngular().then(() => {
+            const rootScope = angular.element(document.body).scope();
+            if (!rootScope.objectSelectionCallbacks) {
+                rootScope.objectSelectionCallbacks = [];
+                ScreepsAdapter.onViewChange((viewName, oldView) => {
+                    const roomViews = ["top.game-room", "top.sim-custom", "top.sim-survival", "top.sim-tutorial"];
+                    if (watch) watch();
+                    if (roomViews.includes(viewName)) {
+                        watchSelectedObject((newObj, oldObj) => {
+                            notifySelectionWatchers(newObj);
+                        }).then((watcher) => watch = watcher);
+                    }
+                    if (roomViews.includes(oldView)) {
+                        // We notify here so listeners can deselect their stuff
+                        notifySelectionWatchers(null);
+                    }
+                });
+            }
+            rootScope.objectSelectionCallbacks.push(callback);
+        })
+    }
+
     // aliases to angular services
     Object.defineProperty(ScreepsAdapter, "User", {
         get: function() {
