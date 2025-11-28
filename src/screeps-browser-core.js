@@ -119,10 +119,15 @@
         this.currentView = newViewName;
 
         for (let i in rootScope.viewChangeCallbacks) {
-            if (compatViews[newViewName]) {
-                rootScope.viewChangeCallbacks[i](compatViews[newViewName]);
+            try {
+
+                if (compatViews[newViewName]) {
+                    rootScope.viewChangeCallbacks[i](compatViews[newViewName]);
+                }
+                rootScope.viewChangeCallbacks[i](newViewName, oldViewName);
+            } catch (e) {
+                console.error(e);
             }
-            rootScope.viewChangeCallbacks[i](newViewName, oldViewName);
         }
     }
 
@@ -168,8 +173,13 @@
             const rootScope = angular.element(document.body).scope();
             if (!rootScope.hashChangeCallbacks) {
                 rootScope.$watch(() => window.location.hash, function(newVal, oldVal) {
-                    for (let i in rootScope.hashChangeCallbacks) {
-                        rootScope.hashChangeCallbacks[i](window.location.hash);
+                    try {
+
+                        for (let i in rootScope.hashChangeCallbacks) {
+                            rootScope.hashChangeCallbacks[i](window.location.hash);
+                        }
+                    } catch (e) {
+                        console.error(e);
                     }
                 });
 
@@ -190,7 +200,11 @@
             let $routeParams = angular.element(document.body).injector().get("$routeParams");
             let room = $routeParams.room;
             if (room !== rootScope.lastRoom) {
-                callback(room);
+                try {
+                    callback(room);
+                } catch (e) {
+                    console.error(e);
+                }
                 rootScope.lastRoom = room;
             }
         });
@@ -229,7 +243,11 @@
     function notifySelectionWatchers(object) {
         const rootScope = angular.element(document.body).scope();
         for (const callback of rootScope.objectSelectionCallbacks) {
-            callback({ object });
+            try {
+                callback({ object });
+            } catch (e) {
+                console.log(e);
+            }
         }
     }
 
