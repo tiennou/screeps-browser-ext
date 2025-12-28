@@ -17,7 +17,7 @@ $(document).ready(() => {
     let monitorRunning = false;
     ScreepsAdapter.onRoomChange(function (roomName) {
         console.log("Visible room changed to:", roomName);
-        
+
         function notifyCurrentRoomVisibility() {
             let roomElem = angular.element('.room');
             let roomScope = roomElem.scope();

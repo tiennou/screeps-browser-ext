@@ -27,7 +27,7 @@ window.ScreepsAdapter = window.ScreepsAdapter || {};
         if (!rootScope.viewChangeCallbacks) {
             let tutorial = angular.element(document.body).injector().get("Tutorial");
             console.log("Overriding Tutorial.trigger");
-            
+
             // intercept events as they are passed to the tutorial popup manager
             tutorial._trigger = tutorial.trigger;
             tutorial.trigger = function(triggerName, unknownB) {
@@ -57,7 +57,7 @@ window.ScreepsAdapter = window.ScreepsAdapter || {};
 
         rootScope.hashChangeCallbacks.push(callback);
     };
-    
+
     ScreepsAdapter.onRoomChange = function (callback) {
         let $routeParams = angular.element(document.body).injector().get("$routeParams");
         let rootScope = angular.element(document.body).scope();
@@ -89,7 +89,7 @@ window.ScreepsAdapter = window.ScreepsAdapter || {};
         },
         configurable: true
     });
-    
+
     Object.defineProperty(ScreepsAdapter, "$timeout", {
         get: function() {
             delete this.$timeout;
@@ -100,7 +100,7 @@ window.ScreepsAdapter = window.ScreepsAdapter || {};
         },
         configurable: true
     });
-    
+
     Object.defineProperty(ScreepsAdapter, "Connection", {
         get: function() {
             delete this.Connection;
@@ -111,7 +111,7 @@ window.ScreepsAdapter = window.ScreepsAdapter || {};
         },
         configurable: true
     });
-    
+
     Object.defineProperty(ScreepsAdapter, "Socket", {
         get: function() {
             delete this.Socket;
@@ -122,7 +122,7 @@ window.ScreepsAdapter = window.ScreepsAdapter || {};
         },
         configurable: true
     });
-    
+
     Object.defineProperty(ScreepsAdapter, "Api", {
         get: function() {
             delete this.Api;

@@ -296,7 +296,7 @@ function addAllianceColumnToLeaderboard() {
                         let userName = leaderboard.users[userId].username;
                         let allianceKey = userAlliance[userName];
                         let allianceName = (allianceKey ? allianceData[allianceKey].name : "");
-                        
+
                         $("<td class='alliance-leaderboard'>" + allianceName +" </td>").insertAfter(playerElem);
                     }
                 }

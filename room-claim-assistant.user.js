@@ -73,12 +73,12 @@ function recalculateClaimOverlay() {
                 }
 
                 let userOwned = (roomStats.own && roomStats.own.user === user._id);
-                
+
                 // show minerals if:
                 let showMinerals =
                     (userOwned && roomStats.own.level > 0) || //  user has claimed it OR
                     counts.s.length > 1; // it has 2+ sources
-                
+
                 let state = "not-recommended";
                 if (userOwned && roomStats.own.level > 0) {
                     state = "owned";

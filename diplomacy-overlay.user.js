@@ -165,7 +165,7 @@ function prepareRoomObjects(scope, element, roomHandle, mapScale) {
 
 function recalculateWorldMapDiplomacyOverlay() {
     const content = `<canvas class='room-diplomacy-objects' height='150' width='150' map-scale='3'></canvas>`;
-    
+
     let mapFloatElem = angular.element('.map-float-info');
     let mapContainerElem = angular.element('.map-container');
     let worldMap = mapContainerElem.scope().WorldMap;
@@ -198,14 +198,14 @@ let pendingWorldMapDiplomacyRedraws = 0;
 function deferWorldMapDiplomacyRedraw() {
     let scope = angular.element(".map-container").scope();
     let worldMap = scope.WorldMap;
-    
+
     $('.room-diplomacy-objects').hide();
     $('.room-diplomacy-objects').each((index, elem) => {
         if (elem.listenerEvent) elem.listenerEvent.remove();
         $(elem).remove();
     });
-        
-    if (diplomacyData && worldMap.zoom === 3 && worldMap.displayOptions.diplomacyUnits) { 
+
+    if (diplomacyData && worldMap.zoom === 3 && worldMap.displayOptions.diplomacyUnits) {
         pendingWorldMapDiplomacyRedraws++;
         setTimeout(() => {
             pendingWorldMapDiplomacyRedraws--;
@@ -268,7 +268,7 @@ function bindRoomStatsMonitor() {
                     let roomOverlayElem = angular.element(roomOverlays[i]);
                     let scope = roomOverlayElem.scope();
                     let roomHandle = $(roomOverlayElem).attr("app:game-map-room-objects");
-                    
+
                     let element = $(roomOverlayElem).parent().find('.room-diplomacy-objects');
                     if (element.length) {
                         if (element[0].roomHandle !== roomHandle) {
