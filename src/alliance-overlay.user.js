@@ -10,7 +10,6 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @downloadUrl  REPO_URL/alliance-overlay.user.js
 // @grant        GM_xmlhttpRequest
-// @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require      http://www.leagueofautomatednations.com/static/js/vendor/randomColor.js
 // @require      REPO_URL/screeps-browser-core.js
 // @connect      www.leagueofautomatednations.com
@@ -79,7 +78,7 @@ function exposeAllianceDataForAngular() {
     let $timeout = angular.element('body').injector().get('$timeout');
 
     $timeout(()=>{
-        let worldMapElem = angular.element($('.world-map'));
+        let worldMapElem = angular.element('.world-map');
         let worldMap = worldMapElem.scope().WorldMap;
 
         worldMap.allianceData = allianceData;
@@ -116,7 +115,7 @@ function generateCompiledElement(parent, content) {
 // Bind the WorldMap alliance display option to the localStorage value
 function bindAllianceSetting() {
     let alliancesEnabled = localStorage.getItem("alliancesEnabled") !== "false";
-    let worldMapElem = angular.element($('.world-map'));
+    let worldMapElem = angular.element('.world-map');
     let worldMap = worldMapElem.scope().WorldMap;
 
     worldMap.displayOptions.alliances = alliancesEnabled;
@@ -128,7 +127,7 @@ function bindAllianceSetting() {
         if (worldMap.displayOptions.alliances && !worldMap.userAlliances) {
             ensureAllianceData(exposeAllianceDataForAngular);
         } else {
-            $('.alliance-logo').remove();
+            document.querySelectorAll('.alliance-logo').forEach(n => n.remove());
         }
     };
 
@@ -165,7 +164,7 @@ function addAllianceToggle() {
         section.world-map .map-container .layer-select { right: 90px; } \
     ");
 
-    let mapContainerElem = angular.element($('.map-container'));
+    let mapContainerElem = angular.element('.map-container');
     let compiledContent = generateCompiledElement(mapContainerElem, content);
     $(compiledContent).appendTo(mapContainerElem);
 }
@@ -180,7 +179,7 @@ function addAllianceToInfoOverlay() {
             </span>\
         </div>";
 
-    let mapFloatElem = angular.element($('.map-float-info'));
+    let mapFloatElem = angular.element('.map-float-info');
     let compiledContent = generateCompiledElement(mapFloatElem, content);
     $(compiledContent).insertAfter($(mapFloatElem).children('.owner')[0]);
 }
@@ -263,7 +262,7 @@ function addSectorAllianceOverlay() {
 
     let deferRecalculation = function () {
         // remove alliance logos during redraws
-        $('.alliance-logo').remove();
+        document.querySelectorAll('.alliance-logo').forEach(n => n.remove());
 
         pendingRedraws++;
         setTimeout(() => {
@@ -309,7 +308,7 @@ function addAllianceColumnToLeaderboard() {
 }
 
 // Entry point
-$(document).ready(() => {
+document.addEventListener("readystatechange", () => {
     ScreepsAdapter.onViewChange((view) => {
         if (view === "worldMapEntered") {
             ScreepsAdapter.$timeout(()=> {

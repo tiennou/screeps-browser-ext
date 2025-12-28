@@ -8,7 +8,6 @@
 // @match        http://*.localhost:*/(*)/#!/*
 // @run-at       document-ready
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
-// @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require      REPO_URL/screeps-browser-core.js
 // @downloadUrl  REPO_URL/room-claim-assistant.user.js
 // ==/UserScript==
@@ -46,14 +45,12 @@ function interceptClaim0StatsRequest() {
 }
 
 function recalculateClaimOverlay() {
-    // $(".room-prohibited").hide();
-
     // console.log("recalculateClaimOverlay");
     let user = angular.element(document.body).scope().Me();
-    let mapContainerElem = angular.element($('.map-container'));
+    let mapContainerElem = angular.element(document.querySelector('.map-container'));
     let worldMap = mapContainerElem.scope().WorldMap;
 
-    let mapSectors = $('.map-sector');
+    let mapSectors = document.querySelectorAll('.map-sector');
     for (let i = 0; i < mapSectors.length; i++) {
         let sectorElem = angular.element(mapSectors[i]);
         let scope = sectorElem.scope();
@@ -96,27 +93,28 @@ function recalculateClaimOverlay() {
                     state = "recommended";
                 }
 
-                let claimAssistDiv = $(sectorElem).find('.claim-assist');
-                if (!claimAssistDiv.length) {
-                    claimAssistDiv = $("<div></div>");
-                    $(sectorElem).append(claimAssistDiv);
+                /** @type {HTMLDivElement} */
+                let claimAssistDiv = sectorElem[0].querySelector('.claim-assist');
+                if (!claimAssistDiv) {
+                    claimAssistDiv = document.createElement("div");
+                    sectorElem[0].appendChild(claimAssistDiv);
                 }
 
-                let claimRoom = $(claimAssistDiv).attr("room");
+                let claimRoom = claimAssistDiv.getAttribute("room");
                 if (claimRoom !== roomName) {
                     if (showMinerals && roomStats.minerals0) {
-                        claimAssistDiv.html(`
+                        claimAssistDiv.innerHTML = `
                             <div class='room-mineral-type room-mineral-type-${roomStats.minerals0.type} room-mineral-density-${roomStats.minerals0.density}'>
                                 ${roomStats.minerals0.type}
-                            </div>`);
+                            </div>`;
                     } else {
-                        claimAssistDiv.html('');
+                        claimAssistDiv.innerHTML = '';
                     }
 
-                    claimAssistDiv.attr("class", `room-stats claim-assist ${state}`);
+                    claimAssistDiv.classList.add("room-stats", "claim-assist", state);
                 }
 
-                $(claimAssistDiv).attr("room", roomName);
+                claimAssistDiv.setAttribute("room", roomName);
             });
         }
     }
@@ -129,8 +127,7 @@ function bindMapStatsMonitor() {
     let worldMap = scope.WorldMap;
 
     let deferRecalculation = function () {
-        $('.claim-assist').hide();
-        $('.claim-assist').remove();
+        document.querySelectorAll('.claim-assist').forEach(e => e.remove());
 
         if (worldMap.displayOptions.layer === "claim0") {
             if (worldMap.zoom === 3) {
@@ -139,7 +136,7 @@ function bindMapStatsMonitor() {
                     pendingClaimRedraws--;
                     if (pendingClaimRedraws === 0) {
                         recalculateClaimOverlay();
-                        $('.claim-assist').show();
+                        document.querySelectorAll('.claim-assist').forEach(e => e.toggleAttribute("hidden", false));
                     }
                 }, 500);
             }
@@ -150,7 +147,7 @@ function bindMapStatsMonitor() {
 }
 
 // Entry point
-$(document).ready(() => {
+document.addEventListener("readystatechange", () => {
     DomHelper.addStyle(`
         .claim-assist { pointer-events: none; }
         .claim-assist.not-recommended { background: rgba(192, 192, 50, 0.3); }

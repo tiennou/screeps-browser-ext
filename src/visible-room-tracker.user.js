@@ -8,13 +8,12 @@
 // @match        http://*.localhost:*/(*)/#!/*
 // @run-at       document-ready
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
-// @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require      REPO_URL/screeps-browser-core.js
 // @downloadUrl  REPO_URL/visible-room-tracker.user.js
 // ==/UserScript==
 
 // Entry point
-$(document).ready(() => {
+document.addEventListener("load", () => {
     let monitorRunning = false;
     ScreepsAdapter.onRoomChange(function (roomName) {
         console.log("Visible room changed to:", roomName);

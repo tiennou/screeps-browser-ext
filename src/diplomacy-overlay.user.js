@@ -8,7 +8,6 @@
 // @match        http://*.localhost:*/(*)/#!/*
 // @run-at       document-ready
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
-// @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require      REPO_URL/screeps-browser-core.js
 // @downloadUrl  REPO_URL/diplomacy-overlay.user.js
 // ==/UserScript==
@@ -138,8 +137,8 @@ function ensureDiplomacyData(callback) {
 }
 
 function prepareRoomObjects(scope, element, roomHandle, mapScale) {
-    let graphics = element[0].getContext("2d");
-    element[0].listenerEvent = ScreepsAdapter.Socket.bindEventToScope(scope, `roomMap2:${roomHandle}`, function(objects) {
+    let graphics = element.getContext("2d");
+    element.listenerEvent = ScreepsAdapter.Socket.bindEventToScope(scope, `roomMap2:${roomHandle}`, function(objects) {
         let image = graphics.createImageData(50 * mapScale, 50 * mapScale);
         if (objects) {
             if (_.any(objects, (obj) => !getColor(obj.itemType)));
@@ -161,24 +160,28 @@ function prepareRoomObjects(scope, element, roomHandle, mapScale) {
         graphics.putImageData(image, 0, 0);
     })
 
-    element[0].roomHandle = roomHandle;
+    element.roomHandle = roomHandle;
 }
 
 function recalculateWorldMapDiplomacyOverlay() {
-    const content = `<canvas class='room-diplomacy-objects' height='150' width='150' map-scale='3'></canvas>`;
+    const content = document.createElement("canvas");
+    content.className = "room-diplomacy-objects";
+    content.height = 150;
+    content.width = 150;
+    content.setAttribute("map-scale", "3");
 
     let mapFloatElem = angular.element('.map-float-info');
     let mapContainerElem = angular.element('.map-container');
     let worldMap = mapContainerElem.scope().WorldMap;
 
-    let mapSectors = $('.map-sector');
+    let mapSectors = document.querySelectorAll('.map-sector');
     for (let i = 0; i < mapSectors.length; i++) {
         let sectorElem = angular.element(mapSectors[i]);
         let scope = sectorElem.scope();
         let sector = scope.$parent.sector;
         let roomHandle = worldMap.shard + "/" + sector.name;
 
-        let element = $(sectorElem).find('.room-diplomacy-objects');
+        let element = sectorElem[0].querySelectorAll('.room-diplomacy-objects');
         if (element.length) {
             if (element[0].roomHandle !== roomHandle) {
                 if (element[0].listenerEvent) {
@@ -189,7 +192,7 @@ function recalculateWorldMapDiplomacyOverlay() {
             }
         } else {
             // create a new div
-            element = $(content).appendTo(sectorElem);
+            element = sectorElem[0].appendChild(content.cloneNode());
             prepareRoomObjects(scope, element, roomHandle, 3);
         }
     }
@@ -200,11 +203,12 @@ function deferWorldMapDiplomacyRedraw() {
     let scope = angular.element(".map-container").scope();
     let worldMap = scope.WorldMap;
 
-    $('.room-diplomacy-objects').hide();
-    $('.room-diplomacy-objects').each((index, elem) => {
+    const content = document.querySelectorAll('.room-diplomacy-objects');
+    for (const elem of content) {
+        elem.toggleAttribute("hidden", true);
         if (elem.listenerEvent) elem.listenerEvent.remove();
-        $(elem).remove();
-    });
+        elem.remove();
+    }
 
     if (diplomacyData && worldMap.zoom === 3 && worldMap.displayOptions.diplomacyUnits) {
         pendingWorldMapDiplomacyRedraws++;
@@ -212,7 +216,7 @@ function deferWorldMapDiplomacyRedraw() {
             pendingWorldMapDiplomacyRedraws--;
             if (pendingWorldMapDiplomacyRedraws === 0) {
                 recalculateWorldMapDiplomacyOverlay();
-                $('.room-diplomacy-objects').show();
+                content.forEach(e => e.toggleAttribute("hidden", false));
             }
         }, 500);
     }
@@ -227,7 +231,7 @@ function replaceUnitsToggle() {
             <i class='fa fa-eye'></i>
         </md:button>`;
 
-    if ($("#diplomacy-units").length)
+    if (document.querySelector("#diplomacy-units"))
         return;
 
     let mapContainerElem = angular.element('.map-container');
@@ -236,7 +240,7 @@ function replaceUnitsToggle() {
     worldMap.displayOptions.diplomacyUnits = localStorage.getItem("diplomacyUnits") !== "false";
 
     let compiledContent = DomHelper.generateCompiledElement(mapContainerElem, content);
-    $(compiledContent).appendTo(mapContainerElem);
+    mapContainerElem[0].appendChild(compiledContent[0]);
 
     worldMap.toggleDiplomacyUnits = function () {
         worldMap.displayOptions.diplomacyUnits = !worldMap.displayOptions.diplomacyUnits;
@@ -257,20 +261,24 @@ function bindWorldMapStatsMonitor() {
 }
 
 function bindRoomStatsMonitor() {
-    const content = `<canvas class='room-diplomacy-objects' height='50' width='50' map-scale='1'></canvas>`;
-    $('.room-diplomacy-objects').remove();
+    const content = document.createElement("canvas");
+    content.className = "room-diplomacy-objects";
+    content.height = 50;
+    content.width = 50;
+    content.setAttribute("map-scale", "1");
+    document.querySelectorAll('.room-diplomacy-objects').forEach(e => e.remove());
 
     function deferredMinimapOverlay() {
         let minimapRoot = angular.element('.world-minimap');
         if (minimapRoot.length) {
             ensureDiplomacyData(() => {
-                let roomOverlays = $('.world-minimap canvas.room-objects');
+                let roomOverlays = document.querySelectorAll('.world-minimap canvas.room-objects');
                 for (let i = 0; i < roomOverlays.length; i++) {
                     let roomOverlayElem = angular.element(roomOverlays[i]);
                     let scope = roomOverlayElem.scope();
-                    let roomHandle = $(roomOverlayElem).attr("app:game-map-room-objects");
+                    let roomHandle = roomOverlayElem[0].getAttribute("app:game-map-room-objects");
 
-                    let element = $(roomOverlayElem).parent().find('.room-diplomacy-objects');
+                    let element = roomOverlayElem.parent().find('.room-diplomacy-objects');
                     if (element.length) {
                         if (element[0].roomHandle !== roomHandle) {
                             if (element[0].listenerEvent) {
@@ -281,7 +289,7 @@ function bindRoomStatsMonitor() {
                         }
                     } else {
                         // create a new div
-                        element = $(content).insertBefore(roomOverlayElem);
+                        element = roomOverlayElem[0].parentNode.insertBefore(content.cloneNode(), roomOverlayElem[0]);
                         prepareRoomObjects(scope, element, roomHandle, 1);
                     }
                 }
@@ -295,7 +303,7 @@ function bindRoomStatsMonitor() {
 }
 
 // Entry point
-$(document).ready(() => {
+document.addEventListener("readystatechange", () => {
     DomHelper.addStyle(`
         .room-objects { display: none; }
     `);

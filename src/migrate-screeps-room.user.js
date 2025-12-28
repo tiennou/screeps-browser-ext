@@ -13,7 +13,7 @@
 // ==/UserScript==
 
 function applyTerrain(terrain) {
-    var roomElement = angular.element($('section.room'));
+    var roomElement = angular.element(document.querySelector('section.room'));
     var room = roomElement.scope().Room;
     var injector = roomElement.injector();
 
@@ -30,10 +30,10 @@ function applyTerrain(terrain) {
 }
 
 function adjustRoomDataForCustomMode(roomData) {
-    var gameElement = angular.element($('body'));
+    var gameElement = angular.element(document.body);
     var memory = gameElement.injector().get("MemoryStorage");
 
-    let currentTime = angular.element($('section.room')).scope().Room.gameTime;
+    let currentTime = angular.element(document.querySelector('section.room')).scope().Room.gameTime;
     console.log("current time is", currentTime);
 
     let forceUser = gameElement.injector().get("Auth").Me;
@@ -71,14 +71,14 @@ function migrateRoomToSimulation() {
                     console.log("Room data cached");
                     let roomData = adjustRoomDataForCustomMode(JSON.parse(savedRoomText));
 
-                    var gameElement = angular.element($('body'));
+                    var gameElement = angular.element(document.body);
                     var memory = gameElement.injector().get("MemoryStorage");
                     var destroyWatcher = gameElement.scope().$watch(function () { return (memory.get("gametime")); }, function (newVal, oldVal) {
                         console.log("game time changed", oldVal, "=>", newVal);
                         if (newVal === 1) {
                             console.log("Sim room ready");
                             try {
-                                var roomScope_1 = angular.element($('section.room')).scope();
+                                var roomScope_1 = angular.element(document.querySelector('section.room')).scope();
                                 var room_1 = roomScope_1.Room;
                                 console.log("Applying terrain...");
                                 applyTerrain(roomData.terrain[0].terrain);
@@ -99,12 +99,12 @@ function migrateRoomToSimulation() {
         };
     };
 
-    var roomScope = angular.element($('section.room')).scope();
+    var roomScope = angular.element(document.querySelector('section.room')).scope();
     var room = roomScope.Room;
     room.save();
 }
 
-$(function () {
+document.addEventListener("readystatechange", () => {
     // push the load to the end of the event queue
     setTimeout(migrateRoomToSimulation);
 });
