@@ -82,6 +82,14 @@
     const ScreepsAdapter = {};
     ScreepsAdapter.VERSION = VERSION;
 
+    /**
+     * Execute a callback once Angular's ready
+     * @param {() => void} callback - A callback to execute
+     */
+    ScreepsAdapter.ready = function(callback) {
+        waitForAngular().then(() => callback());
+    }
+
     function notifyViewWatchers(newViewName, oldViewName) {
         /**
         * Compatibility with the old Tutorial-based interception.
@@ -164,9 +172,23 @@
     };
 
     /**
-     * Execute a callback if the URL hash changes.
+     * Trigger a callback when the hash component of the browser's URI changes (`window.location.hash`).
+     * In the Screeps client, the hash is used to discriminate between different views.
      *
-     * @param {(hash: string) => void} callback
+     * Examples:
+     * - `#!/room/shard0/N12W34`: view for Room N12W34 on shard0
+     * - `#!/map/shard3?pos=-18.5,-33.5`: view for WorldMap on shard3,
+     *     centered at X/Y room coordinates; these coordinates can be converted to
+     *     a room name using an algorithm in the Screeps engine source code
+     * - `#!/market/history`: current player's market transaction history
+     * - `#!/market/my`: current player's open market orders
+     * - `#!/market/all`: all market active orders / prices for all tradeable resources
+     * - `#!/inventory`: manage intershard resource inventory and decorations
+     * - `#!/profile/PlayerName`: public profile page for PlayerName
+     * - `#!/overview`: current player's overview page
+     * - `#!/overview/power`: power creep management view
+     *
+     * @param {(hash: string) => void} callback - the new value of `window.location.hash`
      */
     ScreepsAdapter.onHashChange = function (callback) {
         waitForAngular().then(() => {
@@ -191,8 +213,10 @@
     };
 
     /**
-     * Execute a callback if the current room changes.
-     * @param {(roomName: string) => void} callback
+     * Trigger a callback when entering a room or switching from
+     * one view to another.
+     *
+     * @param {(roomName: string) => void} callback - the name of the new room
      */
     ScreepsAdapter.onRoomChange = function (callback) {
         ScreepsAdapter.onHashChange((hash) => {
@@ -279,6 +303,30 @@
             rootScope.objectSelectionCallbacks.push(callback);
         })
     }
+
+    /**
+     * Display a popup dialog
+     *
+     * @param data an object containing the following fields
+     *   title?: string -- a plaintext title; if title and icon are omitted,
+     *     an exclamation point icon is shown
+     *   icon?: url -- an icon/image URL; if title and icon are omitted,
+     *     an exclamation point icon is shown
+     *   message?: text -- a plaintext message to show in the dialog body;
+     *     if message and innerHTML
+     * TODO: Document other data properties:
+     *   buttonOkLabel
+     *   buttonCancelLabel
+     *
+     * For additional parameters and context, search the following terms
+     * in the debugger:
+     * - dlg-alert.component.pug
+     * - DlgAlertComponent
+     * - AlertService
+     */
+    ScreepsAdapter.showDialog = function(data) {
+        angular.element('body').injector().get('AlertService').show({ data });
+    };
 
     // aliases to angular services
     Object.defineProperty(ScreepsAdapter, "User", {
