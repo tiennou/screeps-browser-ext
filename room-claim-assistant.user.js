@@ -5,8 +5,11 @@
 // @namespace    https://screeps.com/
 // @version      0.1.6
 // @author       James Cook
-// @include      https://screeps.com/a/
+// @match        https://screeps.com/a/*
+// @match        https://screeps.com/ptr/*
+// @match        http://*.localhost:*/(*)/#!/*
 // @run-at       document-ready
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
 // @require      https://github.com/Esryok/screeps-browser-ext/raw/master/screeps-browser-core.js
 // @downloadUrl  https://github.com/Esryok/screeps-browser-ext/raw/master/room-claim-assistant.user.js

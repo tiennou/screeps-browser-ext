@@ -1,12 +1,13 @@
-/*jshint multistr: true */
-
 // ==UserScript==
 // @name         Screeps alliance overlay
 // @namespace    https://screeps.com/
-// @version      0.2.9
+// @version      0.2.10
 // @author       James Cook
-// @include      https://screeps.com/a/
+// @match        https://screeps.com/a/*
+// @match        https://screeps.com/ptr/*
+// @match        http://*.localhost:*/(*)/#!/*
 // @run-at       document-ready
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @downloadUrl  https://raw.githubusercontent.com/LeagueOfAutomatedNations/loan-browser-ext/master/dist/alliance-overlay.user.js
 // @grant        GM_xmlhttpRequest
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
@@ -14,6 +15,8 @@
 // @require      https://github.com/Esryok/screeps-browser-ext/raw/master/screeps-browser-core.js
 // @connect      www.leagueofautomatednations.com
 // ==/UserScript==
+
+/*jshint multistr: true */
 
 const loanBaseUrl = "http://www.leagueofautomatednations.com";
 

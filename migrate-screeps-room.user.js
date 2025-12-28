@@ -3,9 +3,12 @@
 // @namespace    https://screeps.com/
 // @version      1.4
 // @author       Mark Bertels, Esryok
+// @match        https://screeps.com/a/*
+// @match        https://screeps.com/ptr/*
+// @match        http://*.localhost:*/(*)/#!/*
 // @run-at       context-menu
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @grant        none
-// @match        https://*/*
 // ==/UserScript==
 
 function applyTerrain(terrain) {
