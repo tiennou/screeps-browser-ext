@@ -1,7 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "lint": "eslint"
+    "lint": "eslint",
+    "build": "BUILD_ENV=development node build.js",
+    "build:prod": "BUILD_ENV=production node build.js",
+    "watch": "BUILD_ENV=development node build.js --watch",
+    "serve": "http-serve -p 8000 public/"
   },
   "type": "module",
   "devDependencies": {
@@ -14,7 +18,7 @@
     "eslint": "^9.39.2",
     "eslint-plugin-userscripts": "^0.5.6",
     "globals": "^16.5.0",
-    "rollup": "^4.54.0",
+    "http-serve": "^1.0.1",
     "typescript": "^5.9.3"
   }
 }

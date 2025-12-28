@@ -9,6 +9,7 @@
 // @run-at       context-menu
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @grant        none
+// @downloadUrl  REPO_URL/migrate-screeps-room.user.js
 // ==/UserScript==
 
 function applyTerrain(terrain) {
