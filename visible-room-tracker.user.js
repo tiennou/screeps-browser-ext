@@ -13,8 +13,6 @@
 // @downloadUrl  https://github.com/Esryok/screeps-browser-ext/raw/master/visible-room-tracker.user.js
 // ==/UserScript==
 
-/*jshint multistr: true */
-
 // Entry point
 $(document).ready(() => {
     let monitorRunning = false;

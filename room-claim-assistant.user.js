@@ -1,5 +1,3 @@
-/*jshint multistr: true */
-
 // ==UserScript==
 // @name         Screeps room claim assistant
 // @namespace    https://screeps.com/

@@ -16,8 +16,6 @@
 // @connect      www.leagueofautomatednations.com
 // ==/UserScript==
 
-/*jshint multistr: true */
-
 const loanBaseUrl = "http://www.leagueofautomatednations.com";
 
 let allianceData;

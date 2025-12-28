@@ -13,8 +13,6 @@
 // @downloadUrl  https://github.com/Esryok/screeps-browser-ext/raw/master/diplomacy-overlay.user.js
 // ==/UserScript==
 
-/*jshint multistr: true */
-
 let colorMap = {
     2: [255, 150, 0],
     3: [255, 150, 0],
