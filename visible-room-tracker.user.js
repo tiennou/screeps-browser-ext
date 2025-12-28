@@ -9,8 +9,8 @@
 // @run-at       document-ready
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js
-// @require      https://tiennou.github.io/screeps-browser-ext/screeps-browser-core.js
-// @downloadUrl  https://tiennou.github.io/screeps-browser-ext/visible-room-tracker.user.js
+// @require      http://localhost:8000/screeps-browser-core.js
+// @downloadUrl  http://localhost:8000/visible-room-tracker.user.js
 // ==/UserScript==
 
 // Entry point
