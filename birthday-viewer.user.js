@@ -10,7 +10,6 @@
 // @match        https://screeps.com/ptr/*
 // @match        http://*.localhost:*/(*)/#!/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
-// @require      http://127.0.0.1:8083/screeps-browser-core.js
 // @require      https://tiennou.github.io/screeps-browser-ext/screeps-browser-core.js
 // @downloadUrl  https://tiennou.github.io/screeps-browser-ext/gui-extender.js
 // ==/UserScript==
