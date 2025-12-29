@@ -5,13 +5,13 @@
 // @description  This adds a creep's birthday to the inspector
 // @author       Traxus, various
 // @run-at       document-ready
+// @grant        none
 // @match        https://screeps.com/a/*
 // @match        https://screeps.com/ptr/*
 // @match        http://*.localhost:*/(*)/#!/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=screeps.com
-// @ require      https://github.com/Esryok/screeps-browser-ext/raw/master/screeps-browser-core.js
-// @require      http://127.0.0.1:8083/screeps-browser-core.js
-// @grant        none
+// @require      REPO_URL/screeps-browser-core.js
+// @downloadUrl  REPO_URL/gui-extender.js
 // ==/UserScript==
 
 // Original from https://github.com/screepers/screeps-snippets/blob/master/src/client-abuse/JavaScript/util.inject.Birthday.js
