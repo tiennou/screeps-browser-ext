@@ -296,7 +296,7 @@ ScreepsAdapter.ready(() => {
     const isPtr = angular.element('body').scope().ptr;
     const fontSizeKey = `${isPtr ? 'ptr:' : ''}console.fontSize`;
     const wordWrapKey = `${isPtr ? 'ptr:' : ''}console.wordWrap`;
-    const dockLeftKey = `${isPtr ? 'ptr:' : ''}game.editor.dockLeft`;
+    const dockSideKey = `${isPtr ? 'ptr:' : ''}game.editor.dockSide`;
     const minimizedKey = `${isPtr ? 'ptr:' : ''}game.editor.hidden`;
     const heightKey = `${isPtr ? 'ptr:' : ''}game.editor.height`;
     const widthKey = `${isPtr ? 'ptr:' : ''}game.editor.width`;
@@ -369,16 +369,20 @@ ScreepsAdapter.ready(() => {
     const resizeHandle = $('.resize-handle');
     const resizeVertHandler = $._data($('.resize-handle')[0], 'events').mousedown[0].handler;
 
-    const updatePanelDocking = (toggled) => {
+    /**
+     *
+     * @param {"bottom" | "left"} dockingSide
+     */
+    const updatePanelDocking = (dockingSide) => {
       // section.room element is recreated when switching between history and room views;
       // need to ensure reference to it is up-to-date
       const editorPanel = angular.element('.editor-panel');
       const editorPanelElem = editorPanel[0];
       const roomElem = angular.element('section.room')[0];
 
-      localStorage.setItem(dockLeftKey, toggled);
+      localStorage.setItem(dockSideKey, dockingSide);
 
-      if (toggled) {
+      if (dockingSide === "left") {
         // Dock panel to left
         const editorWidth = localStorage.getItem(widthKey) || Math.floor(window.screen.width * 0.4).toString();
         localStorage.setItem(widthKey, editorWidth);
@@ -400,7 +404,7 @@ ScreepsAdapter.ready(() => {
         // Update button style and tooltip
         dockToggleButton.addClass('dock-bottom');
         dockToggleButton.attr('title', dockBottomTitle);
-      } else {
+      } else if (dockingSide === "bottom") {
         // Dock panel to bottom
         const editorHeight = localStorage.getItem(heightKey);
         editorPanelElem.style.width = '100%';
@@ -421,6 +425,8 @@ ScreepsAdapter.ready(() => {
         // Update button style and tooltip
         dockToggleButton.removeClass('dock-bottom');
         dockToggleButton.attr('title', dockLeftTitle);
+      } else {
+        console.log("invalid docking side:", dockingSide)
       }
 
       angular.element('section.room').scope().$broadcast('resize', { sameSize: !0 });
@@ -430,7 +436,11 @@ ScreepsAdapter.ready(() => {
       $('.btn-panel-toggle').removeClass('minimized');
     };
     dockToggleButton.on('click', (e) => {
-      updatePanelDocking(!(localStorage.getItem(dockLeftKey) === "true"));
+      const cycleSide = {
+        "left": "bottom",
+        "bottom": "left",
+      };
+      updatePanelDocking(cycleSide[localStorage.getItem(dockSideKey)] ?? "bottom");
     });
 
     // Update popup/minimize buttons to force dock to bottom before triggering
@@ -476,7 +486,7 @@ ScreepsAdapter.ready(() => {
 
     // Initialize editor panel docking state
     if (!(localStorage.getItem(minimizedKey) === "true")) {
-      setTimeout(() => { updatePanelDocking(localStorage.getItem(dockLeftKey)); }, 0);
+      setTimeout(() => { updatePanelDocking(localStorage.getItem(dockSideKey)); }, 0);
     } else {
       angular.element('.resize-handle-horizontal').hide();
     }
