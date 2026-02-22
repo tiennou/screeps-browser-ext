@@ -4,7 +4,7 @@ A collection of userscripts for Screeps that enhance the browser experience.
 
 ## Installation
 
-Visit the [published userscripts](https://tiennou.github.io/screeps-browser-ext/index.html) to install any of the available scripts.
+Visit the [published userscripts](https://screepers.github.io/screeps-browser-ext/index.html) to install any of the available scripts.
 
 ## Development
 
